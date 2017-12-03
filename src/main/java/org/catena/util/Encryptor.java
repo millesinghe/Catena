@@ -26,7 +26,22 @@ public class Encryptor {
 	
 	private String encryptedMsg;
 	
-	
+	private static Encryptor instance;
+    
+    public static synchronized Encryptor getInstance(){
+        if(instance == null){
+            try {
+				instance = new Encryptor();
+			} catch (NoSuchAlgorithmException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (NoSuchPaddingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+        }
+        return instance;
+    }
 	public Encryptor() throws NoSuchAlgorithmException, NoSuchPaddingException {
 		this.cipher = Cipher.getInstance("RSA");
 	}
@@ -78,7 +93,5 @@ public class Encryptor {
 	public String getEncryptedMsg() {
 		return encryptedMsg;
 	}
-	
-	
 
 }

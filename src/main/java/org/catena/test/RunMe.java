@@ -19,12 +19,29 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
 import org.apache.commons.codec.binary.Base64;
+import org.catena.blockchain.Transaction;
+import org.catena.mine.Node;
 import org.catena.util.Encryptor;
+import org.json.JSONObject;
 
 public class RunMe {
 	
 	public static void main(String[] args) throws Exception {
 	
+		Transaction tx = new Transaction();
+		tx.setSenderID("aaa");
+		tx.setRecieverID("bbb");
+		tx.setBody("Hello World");
+		
+		JSONObject sss = tx.getBody();
+		System.out.println(sss);
+		
+		/*
+		Node n = new Node();
+		n.readMsg();*/
+	}
+
+	public void testEncryption() throws Exception {
 		Encryptor en = new Encryptor();
 		System.out.println("----- ENCRYPTION START ---------");
 		String msg = "My Name is Khan";
@@ -36,6 +53,6 @@ public class RunMe {
 		System.out.println("----- Decrypt Message ---------");
 		String decryptMsg = en.decryptWithPublicKey(en.getEncryptedMsg(), en.getPublicKey());
 		System.out.println(decryptMsg);
+	
 	}
-
 }
