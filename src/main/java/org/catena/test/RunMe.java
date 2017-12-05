@@ -22,6 +22,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.catena.blockchain.Transaction;
 import org.catena.mine.Node;
 import org.catena.util.Encryptor;
+import org.catena.util.PropertyFileHandler;
 import org.json.JSONObject;
 
 public class RunMe {
@@ -29,10 +30,15 @@ public class RunMe {
 	public static void main(String[] args) throws Exception {
 	
 		Transaction tx = new Transaction();
-		tx.setSenderID("aaa");
-		tx.setRecieverID("bbb");
-		tx.setBody("Hello World");
 		
+		PropertyFileHandler prop = new PropertyFileHandler("catena.properties");
+		
+		tx.setSenderID(prop.readFromPropertyFile("catena.genesis.id"));
+		tx.setRecieverID(prop.readFromPropertyFile("catena.wallet.id"));
+		tx.setBody("Init Transfer");
+		tx.setTxValue(1000.00);
+		tx.setTxFee(1.0);
+		tx.buildTx();
 		JSONObject sss = tx.getBody();
 		System.out.println(sss);
 		
