@@ -46,10 +46,10 @@ public class Encryptor {
 		this.cipher = Cipher.getInstance("RSA");
 	}
 
-	private String encryptText(String msg, PrivateKey key) throws NoSuchAlgorithmException, NoSuchPaddingException,
+	private String encryptText(String message, PrivateKey key) throws NoSuchAlgorithmException, NoSuchPaddingException,
 			UnsupportedEncodingException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
 		this.cipher.init(Cipher.ENCRYPT_MODE, key);
-		return Base64.encodeBase64String(cipher.doFinal(msg.getBytes("UTF-8")));
+		return Base64.encodeBase64String(cipher.doFinal((message).getBytes("UTF-8")));
 	}
 
 	public String decryptWithPublicKey(String msg, String strKey)
@@ -74,7 +74,7 @@ public class Encryptor {
 		return new String(cipher.doFinal(Base64.decodeBase64(msg)), "UTF-8");
 	}
 
-	public void encryptWithPrivateKey(String msg) throws Exception {
+	public void encryptWithPrivateKey(String message) throws Exception {
 		Encryptor ac = new Encryptor();
 		KeyPair keyPair = KeyPairGenerator.getInstance("RSA").generateKeyPair();
 
@@ -82,7 +82,7 @@ public class Encryptor {
 		PublicKey publicKey = keyPair.getPublic();
 		
 		this.publicKey= Base64.encodeBase64String(publicKey.getEncoded());
-		this.encryptedMsg = ac.encryptText(msg, privateKey);
+		this.encryptedMsg = ac.encryptText(message, privateKey);
 	}
 
 

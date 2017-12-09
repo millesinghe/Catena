@@ -1,39 +1,62 @@
 package org.catena.blockchain;
 
+import java.util.Map;
 import java.util.UUID;
 
-import org.catena.blockchain.transaction.Body;
-import org.catena.blockchain.transaction.Header;
+import org.catena.blockchain.content.Header;
+import org.catena.blockchain.content.Body;
+import org.catena.util.Encryptor;
 import org.json.JSONObject;
 
 public class Transaction {
 
 	private Header header;
 
-	private JSONObject body;
-	
-	private Double txValue;
-	
-	private AssetTXAuditor auditTx;
-	
+	private Body auditTx;
+
+	private JSONObject txSignature;
+
+	// ==== miners attributes
+
 	private boolean isSpent;
-	
+
 	private int confirmation;
-	
-	public Transaction() {
+
+	public Transaction(String sender, Double blockValue, String reciever, Double gas) {
 		String uniqueId = UUID.randomUUID().toString().replace("-", "");
-		header = new Header(uniqueId);
+		header = new Header(uniqueId, String.valueOf(blockValue));
+		this.setSenderID(sender);
+		this.setRecieverID(reciever);
+		this.setTxFee(gas);
+		System.out.println("TXID = " + this.header.getIdTX());
+		JSONObject signatureJSON = this.getDigitalSignature(this.header.getIdTX() + this.getTXValue());
+		this.setTxSignature(signatureJSON);
+
 		this.setSpent(false);
 	}
 
-	public void buildTx() {
-		
-		
-		System.out.println();
-		System.out.println();
+	private JSONObject getDigitalSignature(String inputValue) {
+
+		Encryptor _encryptor = Encryptor.getInstance();
+		try {
+			_encryptor.encryptWithPrivateKey(inputValue);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		String encryptMsg = _encryptor.getEncryptedMsg();
+		String publicKey = _encryptor.getPublicKey();
+
+		JSONObject json = new JSONObject();
+		json.put("msg", encryptMsg);
+		json.put("key", publicKey);
+
+		return json;
 	}
 
-	public void sendTransaction() {
+	public String getTXValue() {
+		return header.getTxValue();
 	}
 
 	public String getSenderID() {
@@ -53,49 +76,18 @@ public class Transaction {
 	}
 
 	/**
-	 * @return the message
-	 */
-	public JSONObject getBody() {
-		return body;
-	}
-
-	/**
-	 * @param message the message to set
-	 */
-	public void setBody(String message) {
-		this.body = new Body(message).getDigitalSignature();
-	}
-
-	/**
 	 * @return the confirmation
 	 */
 	public int getConfirmation() {
 		return confirmation;
 	}
 
-	/**
-	 * @param confirmation the confirmation to set
-	 */
 	public void setConfirmation(int confirmation) {
 		this.confirmation = confirmation;
 	}
 
 	public void setTxFee(double feeTX) {
 		header.setGasTX(feeTX);
-	}
-
-	/**
-	 * @return the txValue
-	 */
-	public double getTxValue() {
-		return txValue;
-	}
-
-	/**
-	 * @param txValue the txValue to set
-	 */
-	public void setTxValue(double txValue) {
-		this.txValue = txValue;
 	}
 
 	/**
@@ -106,7 +98,8 @@ public class Transaction {
 	}
 
 	/**
-	 * @param isSpent the isSpent to set
+	 * @param isSpent
+	 *            the isSpent to set
 	 */
 	public void setSpent(boolean isSpent) {
 		this.isSpent = isSpent;
@@ -115,15 +108,31 @@ public class Transaction {
 	/**
 	 * @return the auditTx
 	 */
-	public AssetTXAuditor getAuditTx() {
+	public Body getAuditTx() {
 		return auditTx;
 	}
 
 	/**
-	 * @param auditTx the auditTx to set
+	 * @param auditTx
+	 *            the auditTx to set
 	 */
-	public void setAuditTx(AssetTXAuditor auditTx) {
+	public void setAuditTx(Body auditTx) {
 		this.auditTx = auditTx;
+	}
+
+	/**
+	 * @return the txSignature
+	 */
+	public JSONObject getTxSignature() {
+		return txSignature;
+	}
+
+	/**
+	 * @param signatureJSON
+	 *            the txSignature to set
+	 */
+	public void setTxSignature(JSONObject signatureJSON) {
+		this.txSignature = signatureJSON;
 	}
 
 }

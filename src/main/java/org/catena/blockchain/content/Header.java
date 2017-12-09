@@ -1,12 +1,13 @@
-package org.catena.blockchain.transaction;
+package org.catena.blockchain.content;
 
 import java.sql.Timestamp;
 
 public class Header {
 
-	public Header(String uniqueId) {
+	public Header(String uniqueId, String value) {
 		this.idTX = uniqueId;
 		this.timestamp = new Timestamp(System.currentTimeMillis()).getTime();
+		this.txValue = value;
 	}
 
 	private String idTX;
@@ -18,6 +19,8 @@ public class Header {
 	private String senderID;
 
 	private String recieverID;
+	
+	private String txValue;
 
 	public String getIdTX() {
 		return idTX;
@@ -57,6 +60,20 @@ public class Header {
 
 	public void setRecieverID(String recieverID) {
 		this.recieverID = recieverID;
+	}
+
+	/**
+	 * @return the txValue
+	 */
+	public String getTxValue() {
+		return txValue;
+	}
+
+	/**
+	 * @param txValue the txValue to set
+	 */
+	public void setTxValue(String txValue) {
+		this.txValue = txValue;
 	}
 	
 	
