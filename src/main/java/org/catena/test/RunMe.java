@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.catena.blockchain.Transaction;
 import org.catena.blockchain.content.Body;
+import org.catena.blockchain.content.GenesisTx;
 import org.catena.mine.Node;
 import org.catena.util.Encryptor;
 import org.json.JSONObject;
@@ -14,51 +15,26 @@ public class RunMe {
 	public static void main(String[] args) throws Exception {
 
 		RunMe run = new RunMe();
-		Transaction genesis = run.genesisBlock();
+		Transaction genesis = new GenesisTx("Block_Creator", 500.0, "Milinda_Bandara", 0.01, null);
 		run.testencryption(genesis.getTxSignature());
-		Transaction tx1 = run.testTransaction(genesis);
 
+		Transaction tx1 = run.testTransaction(genesis, "Thilina_Namal", 200.0);
 		run.testencryption(tx1.getTxSignature());
-		
+
+		Transaction tx2 = run.testTransaction(genesis, "Milinda_Bandara", 300.0);
+		run.testencryption(tx2.getTxSignature());
 	}
 
-	private Transaction testTransaction(Transaction genesis) {
-	
-		Map<Transaction, String> prevTx = new HashMap<Transaction, String>();
-		prevTx.put(genesis, genesis.getTXValue());
-		Transaction tx1 = this.createBlock(genesis.getRecieverID(), 200.00, "Thilina_Namal", 0.01, prevTx, null);
-	
+	private Transaction testTransaction(Transaction prevTx, String reciever, double value) {
+		Map<Transaction, String> inpList = new HashMap<Transaction, String>();
+		inpList.put(prevTx, prevTx.getTXValue());
+		Transaction tx1 = new Transaction(prevTx.getRecieverID(), value, reciever, 0.01, inpList);
 		return tx1;
-				
 	}
-	
+
 	private void testencryption(JSONObject data) {
 		Node node = new Node();
-		node.readMsg(data);		
-	}
-	
-	private Transaction genesisBlock() {
-		Transaction genesis = new Transaction("Block_Creator", 500.0, "Milinda_Bandara", 0.01);
-		Map<Transaction, String> txPair = new HashMap<Transaction, String>();
-		txPair.put(genesis, genesis.getTXValue());
-		
-		Body auditTx = new Body();
-		auditTx.setInputTxList(txPair);
-		genesis.setAuditTx(auditTx );
-		
-		return genesis;
-	}
-
-	private Transaction createBlock(String sender, Double blockValue, String reciever, Double gas,
-			Map<Transaction, String> inTxs, Map<Transaction, String> outTxs) {
-		Transaction _block = new Transaction(sender, blockValue, reciever, gas);
-		
-		Body auditTx = new Body();
-		auditTx.setInputTxList(inTxs);
-		auditTx.setOutputTxList(outTxs);
-		_block.setAuditTx(auditTx);
-
-		return _block;
+		node.readMsg(data);
 	}
 
 	public void testEncryption() throws Exception {

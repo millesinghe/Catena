@@ -1,6 +1,8 @@
 package org.catena.blockchain;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import org.catena.blockchain.content.Header;
@@ -22,17 +24,31 @@ public class Transaction {
 
 	private int confirmation;
 
-	public Transaction(String sender, Double blockValue, String reciever, Double gas) {
+	public Transaction(String sender, Double blockValue, String reciever, Double gas, Map<Transaction, String> inpTx) {
 		String uniqueId = UUID.randomUUID().toString().replace("-", "");
 		header = new Header(uniqueId, String.valueOf(blockValue));
 		this.setSenderID(sender);
 		this.setRecieverID(reciever);
 		this.setTxFee(gas);
 		System.out.println("TXID = " + this.header.getIdTX());
-		JSONObject signatureJSON = this.getDigitalSignature(this.header.getIdTX() + this.getTXValue());
+
+		JSONObject signatureJSON = this.buildSignature(inpTx);
 		this.setTxSignature(signatureJSON);
 
 		this.setSpent(false);
+	}
+
+	private JSONObject buildSignature(Map<Transaction, String> inpTx) {
+
+		String inpTxList = "";
+		if (inpTx != null) {
+			Set<Transaction> keySet = inpTx.keySet();
+			for (Transaction key : keySet) {
+				inpTxList = inpTxList +",["+ key.header.getIdTX()+ "]";
+			}
+			inpTxList = inpTxList.substring(1);
+		}
+		return this.getDigitalSignature(inpTxList + this.getTXValue());
 	}
 
 	private JSONObject getDigitalSignature(String inputValue) {
