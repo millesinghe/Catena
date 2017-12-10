@@ -4,6 +4,8 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import org.json.JSONObject;
+
 public class BlockWriter {
 
 	private String fileName = null;
@@ -13,19 +15,15 @@ public class BlockWriter {
 		this.fileName = getClass().getClassLoader().getResource(fileName).getPath();
 	}
 
-	public void writeBlock() {
+	public void writeBlock(JSONObject writeContent) {
 		BufferedWriter bw = null;
 		FileWriter fw = null;
 
 		try {
 
-			String content = "This is the content to write into file\n";
-
-			fw = new FileWriter(this.fileName);
+			fw = new FileWriter(this.fileName,true);
 			bw = new BufferedWriter(fw);
-			bw.write(content);
-
-			System.out.println("Done");
+			bw.write(writeContent.toString()+"\n");
 
 		} catch (IOException e) {
 
@@ -46,7 +44,7 @@ public class BlockWriter {
 	public static void main(String[] args) {
 		
 		BlockWriter write = new BlockWriter("_blockchain/_block01");
-		write.writeBlock();
+		write.writeBlock(null);
 	}
 
 }

@@ -17,30 +17,35 @@ public class RunMe {
 		RunMe run = new RunMe();
 
 		Map<Transaction, String> inpList = new HashMap<Transaction, String>();
-		//inpList.put(prevTx, prevTx.getTXValue());
-		Transaction genesis = new GenesisTx("Block_Creator", 500.0, "Milinda_Bandara", 0.01, null);
+		Map<Transaction, String> outpList = new HashMap<Transaction, String>();
+
+		Transaction genesis = new GenesisTx("Block_Creator", 500.0, "Milinda_Bandara", 0.01, null, null);
 		run.testencryption(genesis.getTxSignature());
 
 		inpList = new HashMap<Transaction, String>();
+		outpList = new HashMap<Transaction, String>();
 		inpList.put(genesis, genesis.getTXValue());
-		Transaction tx1 = run.testTransaction("Milinda_Bandara", "Thilina_Namal", 200.0,inpList);
+		Transaction tx1 = run.testTransaction("Milinda_Bandara", "Milinda_Bandara", 200.0, inpList, outpList);
 		run.testencryption(tx1.getTxSignature());
 
 		inpList = new HashMap<Transaction, String>();
+		outpList = new HashMap<Transaction, String>();
 		inpList.put(genesis, genesis.getTXValue());
-		Transaction tx2 = run.testTransaction("Milinda_Bandara", "Milinda_Bandara", 300.0,inpList);
+		outpList.put(tx1, tx1.getTXValue());
+		Transaction tx2 = run.testTransaction("Milinda_Bandara", "Thilina_Bandara", 300.0, inpList, outpList);
 		run.testencryption(tx2.getTxSignature());
-		
+
 		inpList = new HashMap<Transaction, String>();
+		outpList = new HashMap<Transaction, String>();
 		inpList.put(tx1, tx1.getTXValue());
 		inpList.put(tx2, tx2.getTXValue());
-		Transaction tx3 = run.testTransaction("Milinda_Bandara", "James_Bond", 300.0,inpList);
+		Transaction tx3 = run.testTransaction("Milinda_Bandara", "James_Bond", 300.0, inpList, outpList);
 		run.testencryption(tx3.getTxSignature());
 	}
 
-	private Transaction testTransaction(String sender, String reciever, double value,
-			Map<Transaction, String> inputTx) {
-		Transaction tx1 = new Transaction(sender, value, reciever, 0.01, inputTx);
+	private Transaction testTransaction(String sender, String reciever, double value, Map<Transaction, String> inputTx,
+			Map<Transaction, String> outputTx) {
+		Transaction tx1 = new Transaction(sender, value, reciever, 0.01, inputTx, outputTx);
 		return tx1;
 	}
 

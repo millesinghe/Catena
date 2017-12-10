@@ -1,11 +1,13 @@
 package org.catena.blockchain;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
 import org.catena.blockchain.content.Body;
 import org.catena.blockchain.content.Header;
+import org.catena.util.BlockWriter;
 import org.catena.util.Encryptor;
 import org.json.JSONObject;
 
@@ -23,7 +25,7 @@ public class Transaction {
 
 	private int confirmation;
 
-	public Transaction(String sender, Double blockValue, String reciever, Double gas, Map<Transaction, String> inpTx) {
+	public Transaction(String sender, Double blockValue, String reciever, Double gas, Map<Transaction, String> inpTx, Map<Transaction, String> outpTx) {
 		String uniqueId = UUID.randomUUID().toString().replace("-", "");
 		header = new Header(uniqueId, String.valueOf(blockValue));
 		this.setSenderID(sender);
@@ -35,7 +37,18 @@ public class Transaction {
 		JSONObject signatureJSON = this.buildSignature(inpTx);
 		this.setTxSignature(signatureJSON);
 
+		this.init(inpTx,outpTx);
+		
 		this.setSpent(false);
+		
+		this.doTransaction();
+	}
+	
+	private void init(Map<Transaction, String> inpTx, Map<Transaction, String> outpTx) {
+		Body auditTx = new Body();
+		auditTx.setInputTxList(inpTx);
+		auditTx.setOutputTxList(outpTx);
+		this.setAuditTx(auditTx );
 	}
 
 	private void printTxDetails() {
@@ -49,7 +62,28 @@ public class Transaction {
 		System.out.println("Time = " + this.header.getTimestamp());
 		System.out.println();
 	}
+	
+	private JSONObject addToJSONTx() {
 
+		JSONObject jsonTx = new JSONObject();
+		jsonTx.put("ID",this.header.getIdTX());
+		jsonTx.put("Sender",this.header.getSenderID());
+		jsonTx.put("Value",this.header.getTxValue());
+		jsonTx.put("GAS",this.header.getGasTX());
+		jsonTx.put("Reciever",this.header.getRecieverID());
+		jsonTx.put("Time", this.header.getTimestamp());
+		jsonTx.put("Signature", this.getTxSignature());
+		
+		return jsonTx;
+		
+	}
+
+	private void doTransaction() {
+		BlockWriter write = new BlockWriter("_blockchain/_block01");
+		JSONObject writeContent = this.addToJSONTx();
+		write.writeBlock(writeContent); 
+	}
+	
 	private JSONObject buildSignature(Map<Transaction, String> inpTx) {
 
 		String inpTxList = "";
