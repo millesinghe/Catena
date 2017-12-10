@@ -15,20 +15,32 @@ public class RunMe {
 	public static void main(String[] args) throws Exception {
 
 		RunMe run = new RunMe();
+
+		Map<Transaction, String> inpList = new HashMap<Transaction, String>();
+		//inpList.put(prevTx, prevTx.getTXValue());
 		Transaction genesis = new GenesisTx("Block_Creator", 500.0, "Milinda_Bandara", 0.01, null);
 		run.testencryption(genesis.getTxSignature());
 
-		Transaction tx1 = run.testTransaction(genesis, "Thilina_Namal", 200.0);
+		inpList = new HashMap<Transaction, String>();
+		inpList.put(genesis, genesis.getTXValue());
+		Transaction tx1 = run.testTransaction("Milinda_Bandara", "Thilina_Namal", 200.0,inpList);
 		run.testencryption(tx1.getTxSignature());
 
-		Transaction tx2 = run.testTransaction(genesis, "Milinda_Bandara", 300.0);
+		inpList = new HashMap<Transaction, String>();
+		inpList.put(genesis, genesis.getTXValue());
+		Transaction tx2 = run.testTransaction("Milinda_Bandara", "Milinda_Bandara", 300.0,inpList);
 		run.testencryption(tx2.getTxSignature());
+		
+		inpList = new HashMap<Transaction, String>();
+		inpList.put(tx1, tx1.getTXValue());
+		inpList.put(tx2, tx2.getTXValue());
+		Transaction tx3 = run.testTransaction("Milinda_Bandara", "James_Bond", 300.0,inpList);
+		run.testencryption(tx3.getTxSignature());
 	}
 
-	private Transaction testTransaction(Transaction prevTx, String reciever, double value) {
-		Map<Transaction, String> inpList = new HashMap<Transaction, String>();
-		inpList.put(prevTx, prevTx.getTXValue());
-		Transaction tx1 = new Transaction(prevTx.getRecieverID(), value, reciever, 0.01, inpList);
+	private Transaction testTransaction(String sender, String reciever, double value,
+			Map<Transaction, String> inputTx) {
+		Transaction tx1 = new Transaction(sender, value, reciever, 0.01, inputTx);
 		return tx1;
 	}
 

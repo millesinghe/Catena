@@ -1,12 +1,11 @@
 package org.catena.blockchain;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import org.catena.blockchain.content.Header;
 import org.catena.blockchain.content.Body;
+import org.catena.blockchain.content.Header;
 import org.catena.util.Encryptor;
 import org.json.JSONObject;
 
@@ -30,12 +29,25 @@ public class Transaction {
 		this.setSenderID(sender);
 		this.setRecieverID(reciever);
 		this.setTxFee(gas);
-		System.out.println("TXID = " + this.header.getIdTX());
+		
+		this.printTxDetails();
 
 		JSONObject signatureJSON = this.buildSignature(inpTx);
 		this.setTxSignature(signatureJSON);
 
 		this.setSpent(false);
+	}
+
+	private void printTxDetails() {
+
+		System.out.println(">>>>>>>>>>>>>>>>>>  TRANSACTION <<<<<<<<<<<<<<<<<");
+		System.out.println("ID = " + this.header.getIdTX());
+		System.out.println("Sender = " + this.header.getSenderID());
+		System.out.println("Value = " + this.header.getTxValue());
+		System.out.println("GAS = " + this.header.getGasTX());
+		System.out.println("Reciever = " + this.header.getRecieverID());
+		System.out.println("Time = " + this.header.getTimestamp());
+		System.out.println();
 	}
 
 	private JSONObject buildSignature(Map<Transaction, String> inpTx) {
@@ -48,7 +60,7 @@ public class Transaction {
 			}
 			inpTxList = inpTxList.substring(1);
 		}
-		return this.getDigitalSignature(inpTxList + this.getTXValue());
+		return this.getDigitalSignature(inpTxList + "="+ this.getTXValue());
 	}
 
 	private JSONObject getDigitalSignature(String inputValue) {
