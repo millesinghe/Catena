@@ -1,10 +1,12 @@
 package org.catena.test;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.catena.blockchain.SuperTransaction;
+import org.catena.blockchain.CatenaEngine;
 import org.catena.blockchain.Transaction;
-import org.catena.blockchain.content.Body;
 import org.catena.blockchain.content.GenesisTx;
 import org.catena.mine.Node;
 import org.catena.util.Encryptor;
@@ -12,41 +14,60 @@ import org.json.JSONObject;
 
 public class RunMe {
 
+	private ArrayList<Transaction> inputTxs = null;
+	private ArrayList<Transaction> outputTxs = null;
+
 	public static void main(String[] args) throws Exception {
 
 		RunMe run = new RunMe();
-
-		Map<Transaction, String> inpList = new HashMap<Transaction, String>();
-		Map<Transaction, String> outpList = new HashMap<Transaction, String>();
-
-		Transaction genesis = new GenesisTx("Block_Creator", 500.0, "Milinda_Bandara", 0.01, null, null);
-		run.testencryption(genesis.getTxSignature());
-
-		inpList = new HashMap<Transaction, String>();
-		outpList = new HashMap<Transaction, String>();
-		inpList.put(genesis, genesis.getTXValue());
-		Transaction tx1 = run.testTransaction("Milinda_Bandara", "Milinda_Bandara", 200.0, inpList, outpList);
-		run.testencryption(tx1.getTxSignature());
-
-		inpList = new HashMap<Transaction, String>();
-		outpList = new HashMap<Transaction, String>();
-		inpList.put(genesis, genesis.getTXValue());
-		outpList.put(tx1, tx1.getTXValue());
-		Transaction tx2 = run.testTransaction("Milinda_Bandara", "Thilina_Bandara", 300.0, inpList, outpList);
-		run.testencryption(tx2.getTxSignature());
-
-		inpList = new HashMap<Transaction, String>();
-		outpList = new HashMap<Transaction, String>();
-		inpList.put(tx1, tx1.getTXValue());
-		inpList.put(tx2, tx2.getTXValue());
-		Transaction tx3 = run.testTransaction("Milinda_Bandara", "James_Bond", 300.0, inpList, outpList);
-		run.testencryption(tx3.getTxSignature());
+		run.startTestCase();
 	}
 
-	private Transaction testTransaction(String sender, String reciever, double value, Map<Transaction, String> inputTx,
-			Map<Transaction, String> outputTx) {
-		Transaction tx1 = new Transaction(sender, value, reciever, 0.01, inputTx, outputTx);
-		return tx1;
+	private void startTestCase() {
+		
+		CatenaEngine catena = new CatenaEngine();
+
+		double tokenCapital = 500.0;
+		String reciever  = "Milinda_Bandara";
+		
+		Transaction genesisTx = catena.createGenesisBlock(tokenCapital, reciever);
+		this.testencryption(genesisTx.getTxSignature());
+
+//		catena.doTransaction("Milinda_Bandara","Thilina_Bandara",300.0);		
+		this.resetStates();
+		
+		inputTxs.add(genesisTx);
+		
+		Transaction tx1 = catena.createTX("Milinda_Bandara", "Thilina_Bandara", 200.0, inputTxs, outputTxs);
+		
+		SuperTransaction b = new SuperTransaction();
+		b.proceedTransaction();
+		
+		this.testencryption(tx1.getTxSignature());
+
+/*
+ 		this.resetStates();
+		inputTxs.add(genesis);
+		outputTxs.add(tx1);
+		Transaction tx2 = catena.createTX("Milinda_Bandara", "Thilina_Bandara", 300.0, inputTxs, outputTxs);
+		this.testencryption(tx2.getTxSignature());
+
+		this.resetStates();
+		inputTxs.add(tx1);
+		inputTxs.add(tx2);
+		Transaction tx3 = catena.createTX("Milinda_Bandara", "James_Bond", 200.0, inputTxs, outputTxs);
+		this.testencryption(tx3.getTxSignature());
+
+		this.resetStates();
+		inputTxs.add(tx3);
+		Transaction tx4 = catena.createTX("James_Bond", "Sathosi Nakamoto", 100.0, inputTxs, outputTxs);
+		this.testencryption(tx4.getTxSignature());
+*/
+	}
+
+	private void resetStates() {
+		inputTxs = new ArrayList<Transaction>();
+		outputTxs = new ArrayList<Transaction>();
 	}
 
 	private void testencryption(JSONObject data) {

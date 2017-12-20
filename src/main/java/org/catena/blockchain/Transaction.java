@@ -1,6 +1,5 @@
 package org.catena.blockchain;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -14,7 +13,7 @@ import org.json.JSONObject;
 public class Transaction {
 
 	private Header header;
-
+	
 	private Body auditTx;
 
 	private JSONObject txSignature;
@@ -32,7 +31,7 @@ public class Transaction {
 		this.setRecieverID(reciever);
 		this.setTxFee(gas);
 		
-		this.printTxDetails();
+		//this.printTxDetails();
 
 		JSONObject signatureJSON = this.buildSignature(inpTx);
 		this.setTxSignature(signatureJSON);
@@ -40,8 +39,6 @@ public class Transaction {
 		this.init(inpTx,outpTx);
 		
 		this.setSpent(false);
-		
-		this.doTransaction();
 	}
 	
 	private void init(Map<Transaction, String> inpTx, Map<Transaction, String> outpTx) {
@@ -63,7 +60,7 @@ public class Transaction {
 		System.out.println();
 	}
 	
-	private JSONObject addToJSONTx() {
+	JSONObject addToJSONTx() {
 
 		JSONObject jsonTx = new JSONObject();
 		jsonTx.put("ID",this.header.getIdTX());
@@ -76,12 +73,6 @@ public class Transaction {
 		
 		return jsonTx;
 		
-	}
-
-	private void doTransaction() {
-		BlockWriter write = new BlockWriter("_blockchain/_block01");
-		JSONObject writeContent = this.addToJSONTx();
-		write.writeBlock(writeContent); 
 	}
 	
 	private JSONObject buildSignature(Map<Transaction, String> inpTx) {
@@ -195,6 +186,14 @@ public class Transaction {
 	 */
 	public void setTxSignature(JSONObject signatureJSON) {
 		this.txSignature = signatureJSON;
+	}
+
+	public Header getHeader() {
+		return header;
+	}
+
+	public void setHeader(Header header) {
+		this.header = header;
 	}
 
 }
