@@ -1,20 +1,19 @@
 package org.catena.blockchain;
 
-import java.util.Map;
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
 
-import org.catena.blockchain.content.Body;
 import org.catena.blockchain.content.Header;
-import org.catena.util.BlockWriter;
+import org.catena.core.Node;
 import org.catena.util.Encryptor;
 import org.json.JSONObject;
 
 public class Transaction {
 
 	private Header header;
-	
-	private Body auditTx;
+
+	private String proofTxs;
 
 	private JSONObject txSignature;
 
@@ -24,28 +23,30 @@ public class Transaction {
 
 	private int confirmation;
 
-	public Transaction(String sender, Double blockValue, String reciever, Double gas, Map<Transaction, String> inpTx, Map<Transaction, String> outpTx) {
+	public Transaction(String sender, Double blockValue, String reciever, Double gas, ArrayList<Transaction> inputTxs) {
 		String uniqueId = UUID.randomUUID().toString().replace("-", "");
 		header = new Header(uniqueId, String.valueOf(blockValue));
 		this.setSenderID(sender);
 		this.setRecieverID(reciever);
 		this.setTxFee(gas);
+		this.proofTxs ="";
 		
-		//this.printTxDetails();
-
-		JSONObject signatureJSON = this.buildSignature(inpTx);
+		JSONObject signatureJSON = this.buildSignature(inputTxs);
 		this.setTxSignature(signatureJSON);
 
-		this.init(inpTx,outpTx);
-		
 		this.setSpent(false);
 	}
-	
-	private void init(Map<Transaction, String> inpTx, Map<Transaction, String> outpTx) {
-		Body auditTx = new Body();
-		auditTx.setInputTxList(inpTx);
-		auditTx.setOutputTxList(outpTx);
-		this.setAuditTx(auditTx );
+
+	public Transaction(String uniqueId, String sender, Double blockValue, String reciever, Double gas,
+			JSONObject signatureJSON, boolean isSpent) {
+		header = new Header(uniqueId, String.valueOf(blockValue));
+		this.setSenderID(sender);
+		this.setRecieverID(reciever);
+		this.setTxFee(gas);
+		this.setTxSignature(signatureJSON);
+		Node node = new Node();
+		this.proofTxs = node.readMsg(signatureJSON).split("=")[0];
+		this.setSpent(isSpent);
 	}
 
 	private void printTxDetails() {
@@ -59,33 +60,35 @@ public class Transaction {
 		System.out.println("Time = " + this.header.getTimestamp());
 		System.out.println();
 	}
-	
-	JSONObject addToJSONTx() {
+
+	public JSONObject addToJSONTx() {
 
 		JSONObject jsonTx = new JSONObject();
-		jsonTx.put("ID",this.header.getIdTX());
-		jsonTx.put("Sender",this.header.getSenderID());
-		jsonTx.put("Value",this.header.getTxValue());
-		jsonTx.put("GAS",this.header.getGasTX());
-		jsonTx.put("Reciever",this.header.getRecieverID());
+		jsonTx.put("ID", this.header.getIdTX());
+		jsonTx.put("Sender", this.header.getSenderID());
+		jsonTx.put("Value", this.header.getTxValue());
+		jsonTx.put("GAS", this.header.getGasTX());
+		jsonTx.put("Reciever", this.header.getRecieverID());
 		jsonTx.put("Time", this.header.getTimestamp());
 		jsonTx.put("Signature", this.getTxSignature());
-		
+
 		return jsonTx;
-		
+
 	}
-	
-	private JSONObject buildSignature(Map<Transaction, String> inpTx) {
+
+	private JSONObject buildSignature(ArrayList<Transaction> inputTxs) {
 
 		String inpTxList = "";
-		if (inpTx != null) {
-			Set<Transaction> keySet = inpTx.keySet();
-			for (Transaction key : keySet) {
-				inpTxList = inpTxList +",["+ key.header.getIdTX()+ "]";
+		if (inputTxs != null) {
+			Set<Transaction> keySet = null; //inputTxs.keySet();
+			for (Transaction tx : inputTxs) {
+				inpTxList = inpTxList + "," + tx.header.getIdTX() + "";
 			}
 			inpTxList = inpTxList.substring(1);
+		}else {
+			inpTxList = "Genesis_Block";
 		}
-		return this.getDigitalSignature(inpTxList + "="+ this.getTXValue());
+		return this.getDigitalSignature(inpTxList + "=" + this.getTXValue());
 	}
 
 	private JSONObject getDigitalSignature(String inputValue) {
@@ -158,20 +161,6 @@ public class Transaction {
 		this.isSpent = isSpent;
 	}
 
-	/**
-	 * @return the auditTx
-	 */
-	public Body getAuditTx() {
-		return auditTx;
-	}
-
-	/**
-	 * @param auditTx
-	 *            the auditTx to set
-	 */
-	public void setAuditTx(Body auditTx) {
-		this.auditTx = auditTx;
-	}
 
 	/**
 	 * @return the txSignature
@@ -194,6 +183,21 @@ public class Transaction {
 
 	public void setHeader(Header header) {
 		this.header = header;
+	}
+
+	/**
+	 * @return the proofTxs
+	 */
+	public String getProofTxs() {
+		return proofTxs;
+	}
+
+	/**
+	 * @param proofTxs
+	 *            the proofTxs to set
+	 */
+	public void setProofTxs(String proofTxs) {
+		this.proofTxs = proofTxs;
 	}
 
 }

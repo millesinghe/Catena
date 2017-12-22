@@ -1,4 +1,4 @@
-package org.catena.mine;
+package org.catena.core;
 
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
@@ -12,10 +12,11 @@ import org.json.JSONObject;
 
 public class Node {
 
-	public void readMsg(JSONObject data) {	
+	public String readMsg(JSONObject data) {	
 		try {
 			String result = Encryptor.getInstance().decryptWithPublicKey(data.getString("msg"), data.getString("key"));
-			System.out.println(result);
+			System.out.println(">>> CATENASCAN >>> "+result);
+			return result;
 		} catch (InvalidKeyException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -32,6 +33,7 @@ public class Node {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		return null;
 		
 	}
 }
