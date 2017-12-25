@@ -26,13 +26,11 @@ public class RunMe {
 		this.testencryption(genesisTx.getTxSignature());
 
 		TxManager b = new TxManager();
-		Transaction aa = b.proceedTransaction(reciever, "Thilina_Bandara", 300.0);
+		Transaction aa = b.executeTx(reciever, "Thilina_Bandara", 300.0);
 		this.testencryption(aa.getTxSignature());	
 	
-		b = new TxManager();
-
 		reciever  = "Thilina_Bandara";
-		aa = b.proceedTransaction(reciever, "Saharsha_Rathnasiri", 100.0);
+		aa = b.executeTx(reciever, "Saharsha_Rathnasiri", 100.0);
 		this.testencryption(aa.getTxSignature());
 //		this.testencryption(tx1.getTxSignature()); -- need to imp
 

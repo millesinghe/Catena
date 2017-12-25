@@ -3,19 +3,22 @@ package org.catena.util;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class BlockMaster {
 
 	private String fileName = null;
 
-	List<JSONObject> listOfTx = new ArrayList<JSONObject>();	
+	List<JSONObject> listOfTx = new ArrayList<JSONObject>();
 
 	public BlockMaster(String fileName) {
 		super();
@@ -28,9 +31,9 @@ public class BlockMaster {
 
 		try {
 
-			fw = new FileWriter(this.fileName,true);
+			fw = new FileWriter(this.fileName, true);
 			bw = new BufferedWriter(fw);
-			bw.write(writeContent.toString()+"\n");
+			bw.write(writeContent.toString() + "\n");
 
 		} catch (IOException e) {
 
@@ -47,14 +50,13 @@ public class BlockMaster {
 			}
 		}
 	}
-	
+
 	public File[] getBlocks() {
 		File folder = new File(fileName);
 		File[] listOfFiles = folder.listFiles();
 		return listOfFiles;
 	}
-	
-	
+
 	@SuppressWarnings("resource")
 	public double readBlock(File file, String sender, double amount) {
 
@@ -69,14 +71,17 @@ public class BlockMaster {
 			System.out.println("Scanned Transactions >>>>");
 			while ((sCurrentLine = br.readLine()) != null) {
 				JSONObject txJson = new JSONObject(sCurrentLine);
-				
-				if (sender.equals(txJson.get("Reciever").toString())){
-					listOfTx.add(txJson);
-					System.out.println("Proof Tx -"+ sCurrentLine);
-					if(Double.parseDouble(txJson.get("Value").toString()) >= amount){
-						return (amount - Double.parseDouble(txJson.get("Value").toString()));
-					}else {
-						amount = (amount - Double.parseDouble(txJson.get("Value").toString()));
+
+				if (sender.equals(txJson.get("reciever").toString())
+						&& "false".equals(txJson.get("isSpend").toString())) {
+					if (this.furtherInvestigate(file, txJson)) {
+						listOfTx.add(txJson);
+					}
+					System.out.println("Proof Tx -" + sCurrentLine);
+					if (Double.parseDouble(txJson.get("value").toString()) >= amount) {
+						return (amount - Double.parseDouble(txJson.get("value").toString()));
+					} else {
+						amount = (amount - Double.parseDouble(txJson.get("value").toString()));
 					}
 				}
 				System.out.println(sCurrentLine);
@@ -87,9 +92,48 @@ public class BlockMaster {
 			e.printStackTrace();
 
 		} finally {
-			
+
 		}
 		return 0;
+	}
+
+	private boolean furtherInvestigate(File file, JSONObject txJson) {
+
+		String concatId = "id-" + txJson.get("id").toString() + "-spent-" + txJson.get("isSpend").toString();
+
+		Reader fr = null;
+		int eligibleCount = 0;
+
+		try {
+			fr = new FileReader(file);
+
+			BufferedReader br = new BufferedReader(fr);
+
+			String sCurrentLine;
+			while ((sCurrentLine = br.readLine()) != null) {
+				JSONObject tempJson = new JSONObject(sCurrentLine);
+				String usedTxCheck = "id-" + tempJson.get("id").toString() + "-spent-"
+						+ tempJson.get("isSpend").toString();
+
+				if (usedTxCheck.equals("id-" + txJson.get("id").toString() + "-spent-true")) {
+					return false;
+				} else if (usedTxCheck.equals(concatId)) {
+					eligibleCount++;
+				}
+			}
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if (eligibleCount > 0) {
+			return true;
+		}else {
+			return false;
+		}
+
 	}
 
 	public List<JSONObject> getListOfTx() {
@@ -99,9 +143,9 @@ public class BlockMaster {
 	public void setListOfTx(List<JSONObject> listOfTx) {
 		this.listOfTx = listOfTx;
 	}
-	
+
 	public static void main(String[] args) {
-		
+
 		BlockMaster write = new BlockMaster("_blockchain/_block01");
 		write.writeBlock(null);
 	}

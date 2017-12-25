@@ -1,6 +1,7 @@
 package org.catena.core;
 
 import java.io.File;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -14,12 +15,12 @@ public class TxManager {
 	private ArrayList<Transaction> outputTxs = null;
 	private BlockMaster blocks;
 
-	public Transaction proceedTransaction(String sender, String reciever, double amount) {
+	public Transaction executeTx(String sender, String reciever, double amount) {
 		System.out.println("\n\n=============== New Transaction ============");
 		this.resetStates();
 		this.loadBlocks(sender, amount);
 		this.filterInputTxs();
-		//this.filterOutputTxs();
+		// this.filterOutputTxs();
 
 		return Catena.getInstance().createTX(sender, reciever, amount, inputTxs, outputTxs);
 
@@ -28,14 +29,48 @@ public class TxManager {
 	private void loadBlocks(String sender, double amount) {
 		blocks = new BlockMaster("_blockchain");
 		File[] fileList = blocks.getBlocks();
-
+		double balance = 0.0;
 		for (int i = fileList.length; i > 0; i--) {
-			if (0 >= blocks.readBlock(fileList[i - 1], sender, amount)) {
+			balance = blocks.readBlock(fileList[i - 1], sender, amount);
+			if (0 >= balance) {
 				i = 0;
 			}
-		}// balance
+		} // balance
+			// burn transactions
+		this.createBalanceTranscation(sender, (-1 * balance),blocks.getListOfTx().get(0));
+		this.burnTranasactions();
 		System.out.println();
 
+	}
+
+	private void createBalanceTranscation(String sender, double balanceAmount, JSONObject jsonObject) {
+		Transaction tx = this.buildTxbyJSON(jsonObject);
+		inputTxs.add(tx );
+		
+		Transaction balanceTx = new Transaction(sender, balanceAmount, sender, 0.0, inputTxs, false);
+		balanceTx.doTransaction();
+		outputTxs.add(balanceTx);
+	}
+
+	private Transaction buildTxbyJSON(JSONObject jsonTx) {
+		Transaction objTx = new Transaction(jsonTx.getString("id"), jsonTx.getString("reciever"),
+				jsonTx.getDouble("value"), jsonTx.getString("reciever"), jsonTx.getDouble("gas"), jsonTx.getJSONObject("signature"), true);
+		return objTx;		
+	}
+	
+	private void burnTranasactions() {
+		for (JSONObject txBlock : blocks.getListOfTx()) {
+			/*
+			 * txBlock.put("isSpend", true); txBlock.get("isSpend");
+			 * txBlock.put("time", new
+			 * Timestamp(System.currentTimeMillis()).getTime());
+			 * txBlock.put("gas", 0.00);
+			 */
+			Transaction burnTx = new Transaction(txBlock.getString("id"), txBlock.getString("reciever"),
+					txBlock.getDouble("value"), "INTERNAL", 0.0, txBlock.getJSONObject("signature"), true);
+			burnTx.doTransaction();
+			System.out.println();
+		}
 	}
 
 	private void resetStates() {
@@ -44,20 +79,21 @@ public class TxManager {
 	}
 
 	private void filterInputTxs() {
-		for (JSONObject jsonTx : blocks.getListOfTx()) {
+		if (blocks != null) {
+			for (JSONObject jsonTx : blocks.getListOfTx()) {
 
-			String id = jsonTx.getString("ID");
-			String sender = jsonTx.getString("Sender");
-			Double blockValue = jsonTx.getDouble("Value");
-			String reciever = jsonTx.getString("Reciever");
-			Double gas = jsonTx.getDouble("GAS");
-			boolean isSpent = false;
-			JSONObject signatureJSON = jsonTx.getJSONObject("Signature");
-					
-			Transaction tx = new Transaction(id, sender, blockValue, reciever, gas, signatureJSON, isSpent);
-			inputTxs.add(tx);
+				String id = jsonTx.getString("id");
+				String sender = jsonTx.getString("sender");
+				Double blockValue = jsonTx.getDouble("value");
+				String reciever = jsonTx.getString("reciever");
+				Double gas = jsonTx.getDouble("gas");
+				boolean isSpent = jsonTx.getBoolean("isSpend");
+				JSONObject signatureJSON = jsonTx.getJSONObject("signature");
+
+				Transaction tx = new Transaction(id, sender, blockValue, reciever, gas, signatureJSON, isSpent);
+				inputTxs.add(tx);
+			}
 		}
-
 	}
 
 	private void filterOutputTxs() {

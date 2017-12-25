@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import org.catena.blockchain.content.Header;
 import org.catena.core.Node;
+import org.catena.util.BlockMaster;
 import org.catena.util.Encryptor;
 import org.json.JSONObject;
 
@@ -23,7 +24,7 @@ public class Transaction {
 
 	private int confirmation;
 
-	public Transaction(String sender, Double blockValue, String reciever, Double gas, ArrayList<Transaction> inputTxs) {
+	public Transaction(String sender, Double blockValue, String reciever, Double gas, ArrayList<Transaction> inputTxs, boolean isSpent) {
 		String uniqueId = UUID.randomUUID().toString().replace("-", "");
 		header = new Header(uniqueId, String.valueOf(blockValue));
 		this.setSenderID(sender);
@@ -34,7 +35,7 @@ public class Transaction {
 		JSONObject signatureJSON = this.buildSignature(inputTxs);
 		this.setTxSignature(signatureJSON);
 
-		this.setSpent(false);
+		this.setSpent(isSpent);
 	}
 
 	public Transaction(String uniqueId, String sender, Double blockValue, String reciever, Double gas,
@@ -64,14 +65,15 @@ public class Transaction {
 	public JSONObject addToJSONTx() {
 
 		JSONObject jsonTx = new JSONObject();
-		jsonTx.put("ID", this.header.getIdTX());
-		jsonTx.put("Sender", this.header.getSenderID());
-		jsonTx.put("Value", this.header.getTxValue());
-		jsonTx.put("GAS", this.header.getGasTX());
-		jsonTx.put("Reciever", this.header.getRecieverID());
-		jsonTx.put("Time", this.header.getTimestamp());
-		jsonTx.put("Signature", this.getTxSignature());
-
+		jsonTx.put("id", this.header.getIdTX());
+		jsonTx.put("sender", this.header.getSenderID());
+		jsonTx.put("value", this.header.getTxValue());
+		jsonTx.put("gas", this.header.getGasTX());
+		jsonTx.put("reciever", this.header.getRecieverID());
+		jsonTx.put("time", this.header.getTimestamp());
+		jsonTx.put("signature", this.getTxSignature());
+		jsonTx.put("isSpend", this.isSpent());
+		
 		return jsonTx;
 
 	}
@@ -79,7 +81,7 @@ public class Transaction {
 	private JSONObject buildSignature(ArrayList<Transaction> inputTxs) {
 
 		String inpTxList = "";
-		if (inputTxs != null) {
+		if (inputTxs != null && !inputTxs.isEmpty()) {
 			Set<Transaction> keySet = null; //inputTxs.keySet();
 			for (Transaction tx : inputTxs) {
 				inpTxList = inpTxList + "," + tx.header.getIdTX() + "";
@@ -88,7 +90,7 @@ public class Transaction {
 		}else {
 			inpTxList = "Genesis_Block";
 		}
-		return this.getDigitalSignature(inpTxList + "=" + this.getTXValue());
+		return this.getDigitalSignature(inpTxList + "=" + this.getTXValue()+"=>"+this.isSpent);
 	}
 
 	private JSONObject getDigitalSignature(String inputValue) {
@@ -111,6 +113,12 @@ public class Transaction {
 		return json;
 	}
 
+	public void doTransaction() {
+		BlockMaster write = new BlockMaster("_blockchain/_block01");
+		JSONObject writeContent = this.addToJSONTx();
+		write.writeBlock(writeContent);
+	}
+	
 	public String getTXValue() {
 		return header.getTxValue();
 	}

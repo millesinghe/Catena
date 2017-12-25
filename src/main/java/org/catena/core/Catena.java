@@ -25,21 +25,17 @@ public class Catena {
 
 	public Transaction createGenesisBlock(double tokenCapital, String reciever) {
 		Transaction genesis = new GenesisTx("Genesis_Owner", tokenCapital, reciever, 0.01);
-		doTransaction(genesis);
+		genesis.doTransaction();
 		return genesis;
 	}
 
 	public Transaction createTX(String sender, String reciever, double value, ArrayList<Transaction> inputTxs,
 			ArrayList<Transaction> outputTxs) {
 		
-		Transaction tx1 = new Transaction(sender, value, reciever, 0.01,inputTxs);
-		this.doTransaction(tx1);
-		return tx1;
+		Transaction tx = new Transaction(sender, value, reciever, 0.01,inputTxs, false);
+		tx.doTransaction();
+		return tx;
 	}
 
-	private void doTransaction(Transaction tx1) {
-		BlockMaster write = new BlockMaster("_blockchain/_block01");
-		JSONObject writeContent = tx1.addToJSONTx();
-		write.writeBlock(writeContent);
-	}
+	
 }
