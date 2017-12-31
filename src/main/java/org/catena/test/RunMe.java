@@ -1,9 +1,13 @@
 package org.catena.test;
 
+import java.io.File;
+
 import org.catena.blockchain.Transaction;
 import org.catena.core.Catena;
 import org.catena.core.Node;
 import org.catena.core.TxManager;
+import org.catena.exception.InsufficientFundsException;
+import org.catena.util.BlockMaster;
 import org.catena.util.Encryptor;
 import org.json.JSONObject;
 
@@ -15,6 +19,18 @@ public class RunMe {
 
 		RunMe run = new RunMe();
 		run.startTestCase();
+		run.verifyTxs("01",1);
+	}
+
+	private void verifyTxs(String blockNumber, int txNo) {
+		System.out.println("VERIFY TRANSACTION "+(txNo + 1) +" OF BLOCK "+blockNumber+" DETAILS >>>>>>>>>>>");
+		BlockMaster blocks = new BlockMaster("_blockchain");
+		JSONObject jsonTx = blocks.readBlock(blockNumber, txNo);
+		
+		TxManager txm = new TxManager();
+		Transaction tx = txm.buildTxbyJSON(jsonTx);
+		//this.testencryption(tx.getTxSignature());	
+		
 	}
 
 	private void startTestCase() {
@@ -26,12 +42,16 @@ public class RunMe {
 		this.testencryption(genesisTx.getTxSignature());
 
 		TxManager b = new TxManager();
-		Transaction aa = b.executeTx(reciever, "Thilina_Bandara", 300.0);
-		this.testencryption(aa.getTxSignature());	
+		try {
+			Transaction aa = b.executeTx(reciever, "Thilina_Bandara", 700.0);
+			this.testencryption(aa.getTxSignature());
+		} catch (InsufficientFundsException e) {
+			e.printStackTrace();
+		}	
 	
-		reciever  = "Thilina_Bandara";
-		aa = b.executeTx(reciever, "Saharsha_Rathnasiri", 100.0);
-		this.testencryption(aa.getTxSignature());
+		//reciever  = "Thilina_Bandara";
+		//aa = b.executeTx(reciever, "Saharsha_Rathnasiri", 100.0);
+		//this.testencryption(aa.getTxSignature());
 //		this.testencryption(tx1.getTxSignature()); -- need to imp
 
 /*

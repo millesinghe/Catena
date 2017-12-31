@@ -3,7 +3,6 @@ package org.catena.util;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -77,7 +76,7 @@ public class BlockMaster {
 					if (this.furtherInvestigate(file, txJson)) {
 						listOfTx.add(txJson);
 					}
-					System.out.println("Proof Tx -" + sCurrentLine);
+					System.out.println("POW Tx -" + sCurrentLine);
 					if (Double.parseDouble(txJson.get("value").toString()) >= amount) {
 						return (amount - Double.parseDouble(txJson.get("value").toString()));
 					} else {
@@ -94,7 +93,36 @@ public class BlockMaster {
 		} finally {
 
 		}
-		return 0;
+		return amount;
+	}
+
+	@SuppressWarnings("resource")
+	public JSONObject readBlock(String block, int txNumber) {
+
+		BufferedReader br = null;
+		FileReader fr = null;
+
+		try {
+			fr = new FileReader(fileName+File.separator+"_block"+block);
+			br = new BufferedReader(fr);
+
+			String sCurrentLine;
+			System.out.println("Scanned Transactions >>>>");
+			int i = 0;
+
+			while ((sCurrentLine = br.readLine()) != null) {
+				if (i == txNumber) {
+					return new JSONObject(sCurrentLine);
+				}
+				i++;
+			}
+
+		} catch (IOException e) {
+
+			e.printStackTrace();
+
+		}
+		return null;
 	}
 
 	private boolean furtherInvestigate(File file, JSONObject txJson) {
@@ -107,6 +135,7 @@ public class BlockMaster {
 		try {
 			fr = new FileReader(file);
 
+			@SuppressWarnings("resource")
 			BufferedReader br = new BufferedReader(fr);
 
 			String sCurrentLine;
@@ -130,7 +159,7 @@ public class BlockMaster {
 		}
 		if (eligibleCount > 0) {
 			return true;
-		}else {
+		} else {
 			return false;
 		}
 
