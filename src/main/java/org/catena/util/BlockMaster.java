@@ -75,8 +75,11 @@ public class BlockMaster {
 						&& "false".equals(txJson.get("isSpend").toString())) {
 					if (this.furtherInvestigate(file, txJson)) {
 						listOfTx.add(txJson);
+						System.out.println("POW Tx -" + sCurrentLine);
+					}else {
+						System.out.println("Still Searching......");
+						continue;
 					}
-					System.out.println("POW Tx -" + sCurrentLine);
 					if (Double.parseDouble(txJson.get("value").toString()) >= amount) {
 						return (amount - Double.parseDouble(txJson.get("value").toString()));
 					} else {

@@ -43,17 +43,21 @@ public class RunMe {
 
 		TxManager b = new TxManager();
 		try {
-			Transaction aa = b.executeTx(reciever, "Thilina_Bandara", 700.0);
+			Transaction aa = b.executeTx(reciever, "Thilina_Bandara", 200.0);
 			this.testencryption(aa.getTxSignature());
+			
+
+			aa = b.executeTx(reciever, "Thilina_Bandara", 100.0);
+			this.testencryption(aa.getTxSignature());
+			
+			aa = b.executeTx( "Thilina_Bandara", "Saharasha_Rathnasiri", 250.0);
+			this.testencryption(aa.getTxSignature());
+			
 		} catch (InsufficientFundsException e) {
 			e.printStackTrace();
 		}	
-	
-		//reciever  = "Thilina_Bandara";
-		//aa = b.executeTx(reciever, "Saharsha_Rathnasiri", 100.0);
-		//this.testencryption(aa.getTxSignature());
-//		this.testencryption(tx1.getTxSignature()); -- need to imp
 
+		
 /*
  		this.resetStates();
 		inputTxs.add(genesis);
