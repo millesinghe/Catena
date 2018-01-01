@@ -114,7 +114,7 @@ public class Transaction {
 	}
 
 	public void doTransaction() {
-		Catena write = new Catena("_blockchain/_block01");
+		Catena write = new Catena("_blockchain/_block02");
 		JSONObject writeContent = this.addToJSONTx();
 		write.writeBlock(writeContent);
 	}

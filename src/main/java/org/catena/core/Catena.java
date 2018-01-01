@@ -22,6 +22,23 @@ public class Catena {
 
 	public Catena(String fileName) {
 		super();
+		try {
+			this.fileName = getClass().getClassLoader().getResource(fileName).getPath();
+		} catch (NullPointerException e) {
+			this.createBlockFile(fileName);
+		}
+	}
+
+	private void createBlockFile(String fileName) {
+		String noFileName = "/"+ fileName.split("/")[fileName.split("/").length-1];
+		String dirName = fileName.replace(noFileName, "");
+		File file = new File(getClass().getClassLoader().getResource(dirName).getPath()+ noFileName);
+		try {
+			file.createNewFile();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		this.fileName = getClass().getClassLoader().getResource(fileName).getPath();
 	}
 
@@ -149,8 +166,9 @@ public class Catena {
 				while ((sCurrentLine = br.readLine()) != null) {
 					JSONObject txJson = new JSONObject(sCurrentLine);
 					if (txJson.get("reciever").toString().equals(ownerId)) {
-							amount = amount + Double.parseDouble(txJson.get("value").toString());						
-					}else if(txJson.get("sender").toString().equals(ownerId) && txJson.get("reciever").toString().equals("INTERNAL_BURN")) {
+						amount = amount + Double.parseDouble(txJson.get("value").toString());
+					} else if (txJson.get("sender").toString().equals(ownerId)
+							&& txJson.get("reciever").toString().equals("INTERNAL_BURN")) {
 						amount = amount - Double.parseDouble(txJson.get("value").toString());
 					}
 				}

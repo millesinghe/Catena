@@ -18,10 +18,22 @@ public class RunMe {
 	public static void main(String[] args) throws Exception {
 
 		RunMe run = new RunMe();
-		//run.startTestCase();
-		//run.verifyTxs("01",10);
-		System.out.println(run.checkBalanace("Saharasha_Rathnasiri"));
-		
+		//run.startGensesisTestCase();
+		run.verifyTxs("02",5);
+		//System.out.println(run.checkBalanace("Thilina_Bandara"));
+		//run.startNewTXBlock();
+	}
+
+	private void startNewTXBlock() {
+		TxManager b = new TxManager();
+		Transaction aa;
+		try {
+			aa = b.executeTx("Milinda_Bandara", "Saharasha_Rathnasiri", 100.0);
+			this.testencryption(aa.getTxSignature());	
+		} catch (InsufficientFundsException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}	
 	}
 
 	private double checkBalanace(String ownerId) {
@@ -40,7 +52,7 @@ public class RunMe {
 		
 	}
 
-	private void startTestCase() {
+	private void startGensesisTestCase() {
 		
 		double tokenCapital = 500.0;
 		String reciever  = "Milinda_Bandara";
@@ -85,7 +97,8 @@ public class RunMe {
 */
 	}
 
-
+// ================================================
+	
 
 	private void testencryption(JSONObject data) {
 		Node node = new Node();
