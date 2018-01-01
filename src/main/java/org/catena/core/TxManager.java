@@ -2,31 +2,30 @@ package org.catena.core;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.catena.blockchain.Transaction;
 import org.catena.exception.InsufficientFundsException;
-import org.catena.util.BlockMaster;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class TxManager {
 
 	private ArrayList<Transaction> inputTxs = null;
 	private ArrayList<Transaction> outputTxs = null;
-	private BlockMaster blocks;
+	private Catena blocks;
 
 	public Transaction executeTx(String sender, String reciever, double amount) throws InsufficientFundsException {
 		System.out.println("\n\n=============== New Transaction ============");
 		this.resetStatus();
-		this.proceedPayment(sender, amount);
-		//this.filterInputTxs();
-		// this.filterOutputTxs();
+		this.proceedSupportiveTxs(sender, amount);
 
-		return Catena.getInstance().createTX(sender, reciever, amount, inputTxs, outputTxs);
+		return TransactionBuilder.getInstance().createTX(sender, reciever, amount, inputTxs, outputTxs);
 
 	}
 
-	private void proceedPayment(String sender, double amount) throws InsufficientFundsException {
-		blocks = new BlockMaster("_blockchain");
+	private void proceedSupportiveTxs(String sender, double amount) throws InsufficientFundsException {
+		blocks = new Catena("_blockchain");
 		File[] fileList = blocks.getBlocks();
 		double balance = 0.0;
 		for (int i = fileList.length; i > 0; i--) {
@@ -36,16 +35,18 @@ public class TxManager {
 			}
 		}
 		if(0 > balance) {
-			this.createBalanceTranscation(sender, (-1 * balance),blocks.getListOfTx().get(0));	
+			this.createBalanceTranscation(sender, (-1 * balance),blocks.getListOfTx());	
 		}else if(0 < balance) {
 			throw new InsufficientFundsException(balance);	
 		}this.burnTranasactions();
 
 	}
 
-	private void createBalanceTranscation(String sender, double balanceAmount, JSONObject jsonObject) {
-		Transaction tx = this.buildTxbyJSON(jsonObject);
-		inputTxs.add(tx);
+	private void createBalanceTranscation(String sender, double balanceAmount, List<JSONObject> arrTXJSON) {
+		for (Object jsonObject: arrTXJSON) {
+			Transaction tx = this.buildTxbyJSON(new JSONObject(jsonObject.toString()));
+			inputTxs.add(tx);
+		}
 		
 		Transaction balanceTx = new Transaction(sender, balanceAmount, sender, 0.0, inputTxs, false);
 		balanceTx.doTransaction();
@@ -70,29 +71,6 @@ public class TxManager {
 	private void resetStatus() {
 		inputTxs = new ArrayList<Transaction>();
 		outputTxs = new ArrayList<Transaction>();
-	}
-
-	private void filterInputTxs() {
-		if (blocks != null) {
-			for (JSONObject jsonTx : blocks.getListOfTx()) {
-
-				String id = jsonTx.getString("id");
-				String sender = jsonTx.getString("sender");
-				Double blockValue = jsonTx.getDouble("value");
-				String reciever = jsonTx.getString("reciever");
-				Double gas = jsonTx.getDouble("gas");
-				boolean isSpent = jsonTx.getBoolean("isSpend");
-				JSONObject signatureJSON = jsonTx.getJSONObject("signature");
-
-				Transaction tx = new Transaction(id, sender, blockValue, reciever, gas, signatureJSON, isSpent);
-				inputTxs.add(tx);
-			}
-		}
-	}
-
-	private void filterOutputTxs() {
-		outputTxs.add(null);
-
 	}
 
 }

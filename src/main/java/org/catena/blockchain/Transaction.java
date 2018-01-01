@@ -5,8 +5,8 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.catena.blockchain.content.Header;
+import org.catena.core.Catena;
 import org.catena.core.Node;
-import org.catena.util.BlockMaster;
 import org.catena.util.Encryptor;
 import org.json.JSONObject;
 
@@ -114,7 +114,7 @@ public class Transaction {
 	}
 
 	public void doTransaction() {
-		BlockMaster write = new BlockMaster("_blockchain/_block01");
+		Catena write = new Catena("_blockchain/_block01");
 		JSONObject writeContent = this.addToJSONTx();
 		write.writeBlock(writeContent);
 	}

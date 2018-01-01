@@ -4,10 +4,10 @@ import java.io.File;
 
 import org.catena.blockchain.Transaction;
 import org.catena.core.Catena;
+import org.catena.core.TransactionBuilder;
 import org.catena.core.Node;
 import org.catena.core.TxManager;
 import org.catena.exception.InsufficientFundsException;
-import org.catena.util.BlockMaster;
 import org.catena.util.Encryptor;
 import org.json.JSONObject;
 
@@ -18,13 +18,20 @@ public class RunMe {
 	public static void main(String[] args) throws Exception {
 
 		RunMe run = new RunMe();
-		run.startTestCase();
-		run.verifyTxs("01",1);
+		//run.startTestCase();
+		//run.verifyTxs("01",10);
+		System.out.println(run.checkBalanace("Saharasha_Rathnasiri"));
+		
+	}
+
+	private double checkBalanace(String ownerId) {
+		Catena blockchain = new Catena("_blockchain");
+		return blockchain.getFundAmount(ownerId);
 	}
 
 	private void verifyTxs(String blockNumber, int txNo) {
 		System.out.println("VERIFY TRANSACTION "+(txNo + 1) +" OF BLOCK "+blockNumber+" DETAILS >>>>>>>>>>>");
-		BlockMaster blocks = new BlockMaster("_blockchain");
+		Catena blocks = new Catena("_blockchain");
 		JSONObject jsonTx = blocks.readBlock(blockNumber, txNo);
 		
 		TxManager txm = new TxManager();
@@ -38,7 +45,7 @@ public class RunMe {
 		double tokenCapital = 500.0;
 		String reciever  = "Milinda_Bandara";
 		
-		Transaction genesisTx = Catena.getInstance().createGenesisBlock(tokenCapital, reciever);
+		Transaction genesisTx = TransactionBuilder.getInstance().createGenesisBlock(tokenCapital, reciever);
 		this.testencryption(genesisTx.getTxSignature());
 
 		TxManager b = new TxManager();

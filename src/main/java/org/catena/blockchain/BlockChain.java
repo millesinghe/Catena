@@ -1,5 +1,0 @@
-package org.catena.blockchain;
-
-public class BlockChain {
-
-}
